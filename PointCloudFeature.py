@@ -5,7 +5,6 @@ from numpy.linalg import svd, norm
 import matplotlib.pyplot as plt
 from math import floor, pi
 
-
 class point_and_feature:
 
     def __init__(self, point, feature, normal, curvature) -> None:
@@ -36,7 +35,6 @@ class PointCloudFeature:
         if verbose:
             self.patch_size_list = []
             print("PCF source shape=", self.source.shape)
-        print("PCF source shape=", self.source.shape)
     
     def build_features(self):
         assert self.p_f_list == []
@@ -45,7 +43,7 @@ class PointCloudFeature:
             print("Start building up PCF")
 
         for i in range(N):
-            p = self.load(i)
+            p = self.source[:,i].reshape( (3,1) )
             patch = self.select_patch(p)
             self.gen_n_k(point=p, patch=patch)
 
@@ -62,6 +60,9 @@ class PointCloudFeature:
 
         for i in range(N):
             p = self.load(i)
+            if p is None:
+                continue
+            
             patch_idx = self.select_patch_index(p)
             feature, normal, curvature = self.gen_feature(point_idx=i, patch_idx=patch_idx)
             
@@ -75,7 +76,7 @@ class PointCloudFeature:
         if self.verbose:
             print("Obtain #feature=", len(self.p_f_list))
 
-        assert False
+        # assert False
         return len(self.p_f_list)
 
     def select_patch_index(self, point):
@@ -88,13 +89,6 @@ class PointCloudFeature:
         #         "norm(self.source - point, axis=0)=", norm(self.source - point, axis=0).shape, "\n",
         #     )
         return self.source[:, self.select_patch_index(point)]
-    
-    # def calc_svd(self):
-    #     U, S, Vh = np.linalg.svd(self.source)
-    #     pass
-
-    def compute_normal(self):
-        pass
 
     def compute_curvature(self, S):
         k = S[0] / (S[0]+S[1]+S[2])
@@ -102,11 +96,9 @@ class PointCloudFeature:
 
     def gen_n_k(self, point, patch):
         U, S, Vh = svd(patch@patch.T)
-        
         # print("U=", U.shape, "\n",
         #         "S=", S.shape, "\n",
         #         "Vh=", Vh.shape, "\n",)  # U=(3,3), S=(3,), Vh=(3,3)
-
         if self.verbose:
             self.patch_size_list.append(patch.shape[1])
 
@@ -133,8 +125,6 @@ class PointCloudFeature:
         phi = set_limit(phi, phi_offset, phi_offset+phi_range)
         theta = set_limit(theta, theta_offset, theta_offset+theta_range)
 
-        # print(alpha, phi, theta)
-        
         s1 = floor(bins*(alpha-alpha_offset)/alpha_range)
         s2 = floor(bins*(phi-phi_offset)/phi_range)
         s3 = floor(bins*(theta-theta_offset)/theta_range)
@@ -220,12 +210,14 @@ class PointCloudFeature:
         else:
             return None
     
-    # PCF.find return the index of feature, which is nearest to the input feature. 
-    def find(self, target_feature):
-        pass
+    # # PCF.find return the index of feature, which is nearest to the input feature. 
+    # def find(self, target_feature):
+    #     pass
 
     # Check if this data point a good one for feature calculation
     def good_feature(self, index):
+        if self.curvature_list[index] < self.curvature_for_patch:
+            return False
         return True
 
 def main():

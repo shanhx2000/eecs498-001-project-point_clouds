@@ -7,7 +7,9 @@ import numpy
 import matplotlib.pyplot as plt
 ###YOUR IMPORTS HERE###
 import numpy as np
+from numpy.linalg import svd, norm
 from PointCloudFeature import PointCloudFeature as PCF
+import gc
 
 ###YOUR IMPORTS HERE###
 def GetTranform( Cp, Cq ):
@@ -24,12 +26,31 @@ def GetTranform( Cp, Cq ):
     t = q - R@p
     return R,t
 
+def Join_Feature_Set(source, target):
+    source_list = source.p_f_list
+    target_list = target.p_f_list
+    # print("source_list", np.array(source.p_f_list).shape)
+    # print("target_list", target_list.shape)
+    Cp = []
+    Cq = []
+    for s in source_list:
+        vmin = 1e5
+        tmp_p = None
+        for t in target_list:
+            if norm(t.feature-s.feature) < vmin:
+                vmin = norm(t.feature-s.feature)
+                tmp_p = t.point
+        assert tmp_p is not None
+        Cp.append(s.point.reshape( (3,1) ))
+        Cq.append(tmp_p.reshape( (3,1) ))
+    return Cp, Cq
+
 def main():
     #Import the cloud
     pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
 
     ###YOUR CODE HERE###
-    pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
+    pc_target = utils.load_pc('hw4/cloud_icp_target3.csv') # Change this to load in a different target
 
     P = utils.convert_pc_to_matrix(pc_source)
     Q = utils.convert_pc_to_matrix(pc_target)
@@ -46,38 +67,29 @@ def main():
         feature_q = PCF(Q)
         feature_p.build_features()
         feature_q.build_features()
-        assert False
-        # for i in range(P.shape[1]):
-        #     p = np.array(P[:,i]).reshape( (3,1) )
-            
-        #     # Load feature tuple at index
-        #     fp = feature_p.load(i)
-        #     if fp is None:  # Not a useful feature
-        #         continue
+        Cp, Cq = Join_Feature_Set(feature_p, feature_q)
 
-        #     # PCF.find return the index of feature, which is nearest to the input feature. 
-        #     q_idx = feature_q.find(fp)  # New Feature Distance method
-        #     # q_idx = np.argmin( np.linalg.norm(Q-p,axis=0) )  # Original ICP
-        #     assert False
-        #     q = np.array(Q[:,q_idx]).reshape( (3,1) )
-        #     Cp.append( p )
-        #     Cq.append( q )
         Cp = np.squeeze(np.array(Cp),axis=2).T
         Cq = np.squeeze(np.array(Cq),axis=2).T
         R,t = GetTranform( Cp, Cq )
-        newCost = np.sum( np.linalg.norm(R@Cp+t-Cq , axis=0)**2  )
+
+        del Cp, Cp, feature_p, feature_q
+        gc.collect()
+
+        # P = R@Cp+t
+        P = R@P+t # Newly, Should be this one
+        newCost = np.sum( np.linalg.norm(R@P+t-Q , axis=0)**2  )
         error_list.append(newCost)
+
         if ( newCost < bestCost ):
             bestCost = newCost
             print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
         
-        if ( itr > 6 and error_list[-5] - newCost < eps):
+        if ( itr > 10 and error_list[-5] - newCost < eps):
             print ( error_list[-5] - newCost )
             doneFlag = True
-        # P = R@Cp+t
-        P = R@P+t # Newly, Should be this one
 
         itr = itr + 1
         if ( itr % 20 == 0 ):
