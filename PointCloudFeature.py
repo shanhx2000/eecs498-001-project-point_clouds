@@ -22,7 +22,7 @@ def set_limit(v, minv, maxv):
 
 class PointCloudFeature:
     
-    def __init__(self, source, distance_for_patch=2e-2, curvature_for_patch=0.9, verbose=False) -> None:
+    def __init__(self, source, distance_for_patch=1e-2, curvature_for_patch=0.9, verbose=False) -> None:
         self.source = np.array(source)
         self.distance_for_patch = distance_for_patch
         self.curvature_for_patch = curvature_for_patch

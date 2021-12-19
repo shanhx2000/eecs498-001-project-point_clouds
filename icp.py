@@ -10,7 +10,8 @@ import numpy as np
 from numpy.linalg import svd, norm
 from PointCloudFeature import PointCloudFeature as PCF
 import gc
-
+from pcloader import load_pcl
+import time
 ###YOUR IMPORTS HERE###
 def GetTranform( Cp, Cq ):
     p = np.mean(Cp, axis=1).reshape( (3,1) )
@@ -45,16 +46,40 @@ def Join_Feature_Set(source, target):
         Cq.append(tmp_p.reshape( (3,1) ))
     return Cp, Cq
 
+
 def main():
     #Import the cloud
     pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
-
-    ###YOUR CODE HERE###
     pc_target = utils.load_pc('hw4/cloud_icp_target3.csv') # Change this to load in a different target
-
     P = utils.convert_pc_to_matrix(pc_source)
     Q = utils.convert_pc_to_matrix(pc_target)
+    
+
+    # data_dir = "./data/tutorials/template_alignment"
+    # filename_source = "person.pcd"
+    # filename_target = "object_template_0.pcd"
+    # source_data = load_pcl(filename=(data_dir+filename_source))
+    # target_data = load_pcl(filename=(data_dir+filename_target))
+    # P = np.matrix(source_data.T)
+    # Q = np.matrix(target_data.T)
+
     # print ( P.shape )
+    # fig1 = plt.figure()
+    # pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+    # utils.view_pc([pc_fit, pc_target], fig1, ['b', 'r'], ['o', '^'])
+    # fig2 = plt.figure()
+    # pc_fit = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+    # utils.view_pc([pc_fit, pc_target], fig2, ['b', 'r'], ['o', '^'])
+
+    # plt.axis([-0.15, 0.15, -0.15, 0.15])
+    # plt.show()
+    
+    # print ( P.shape )
+    # assert False
+
+    st_time = time.time()
+    
+    
     doneFlag = False
     bestCost = 99999999
     eps = 1e-3 # 1e-2
@@ -73,7 +98,7 @@ def main():
         Cq = np.squeeze(np.array(Cq),axis=2).T
         R,t = GetTranform( Cp, Cq )
 
-        del Cp, Cp, feature_p, feature_q
+        del Cp, Cq, feature_p, feature_q
         gc.collect()
 
         # P = R@Cp+t
@@ -83,7 +108,7 @@ def main():
 
         if ( newCost < bestCost ):
             bestCost = newCost
-            print ( itr , " : ", bestCost )
+        print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
         
@@ -94,6 +119,10 @@ def main():
         itr = itr + 1
         if ( itr % 20 == 0 ):
             print ( "Iteration" , itr )
+
+    ed_time = time.time()
+
+    print("Time Cost=", ed_time-st_time)
 
     print ( P.shape )
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
