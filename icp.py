@@ -10,6 +10,7 @@ import numpy as np
 from numpy.linalg import svd, norm
 from PointCloudFeature import PointCloudFeature as PCF
 import gc
+import pcl
 
 ###YOUR IMPORTS HERE###
 def GetTranform( Cp, Cq ):
@@ -47,10 +48,12 @@ def Join_Feature_Set(source, target):
 
 def main():
     #Import the cloud
-    pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
+    # pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
+    pc_source = np.asarray(pcl.load('data/capture0001.pcd'))
 
     ###YOUR CODE HERE###
-    pc_target = utils.load_pc('hw4/cloud_icp_target3.csv') # Change this to load in a different target
+    # pc_target = utils.load_pc('hw4/cloud_icp_target3.csv') # Change this to load in a different target
+    pc_target = np.asarray(pcl.load('data/capture0002.pcd'))
 
     P = utils.convert_pc_to_matrix(pc_source)
     Q = utils.convert_pc_to_matrix(pc_target)
@@ -73,7 +76,7 @@ def main():
         Cq = np.squeeze(np.array(Cq),axis=2).T
         R,t = GetTranform( Cp, Cq )
 
-        del Cp, Cp, feature_p, feature_q
+        del Cp, Cq, feature_p, feature_q
         gc.collect()
 
         # P = R@Cp+t
