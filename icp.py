@@ -12,7 +12,7 @@ from PointCloudFeature import PointCloudFeature as PCF
 import gc
 from pcloader import load_pcl
 import time
-import pcl
+# import pcl
 
 ###YOUR IMPORTS HERE###
 def GetTranform( Cp, Cq ):
@@ -52,7 +52,7 @@ def Join_Feature_Set(source, target):
 def main():
     #Import the cloud
     pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
-    pc_target = utils.load_pc('hw4/cloud_icp_target3.csv') # Change this to load in a different target
+    pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
     P = utils.convert_pc_to_matrix(pc_source)
     Q = utils.convert_pc_to_matrix(pc_target)
     

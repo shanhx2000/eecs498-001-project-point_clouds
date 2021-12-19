@@ -22,7 +22,7 @@ def set_limit(v, minv, maxv):
 
 class PointCloudFeature:
     
-    def __init__(self, source, distance_for_patch=1e-2, curvature_for_patch=0.9, verbose=False) -> None:
+    def __init__(self, source, distance_for_patch=2e-2, curvature_for_patch=0.9, verbose=False) -> None:
         self.source = np.array(source)
         self.distance_for_patch = distance_for_patch
         self.curvature_for_patch = curvature_for_patch
@@ -115,7 +115,7 @@ class PointCloudFeature:
     def calc_signature(self, alpha, phi, theta, signature_set):
         alpha_offset = -0.07
         alpha_range = 0.14
-        phi_offset = -0.3
+        phi_offset = 0.0
         phi_range = 0.6
         theta_offset = -pi/10.
         theta_range = pi/10.*2.
@@ -128,9 +128,7 @@ class PointCloudFeature:
         s1 = floor(bins*(alpha-alpha_offset)/alpha_range)
         s2 = floor(bins*(phi-phi_offset)/phi_range)
         s3 = floor(bins*(theta-theta_offset)/theta_range)
-        signature_set[s1] += 1
-        signature_set[s2+bins] += 1
-        signature_set[s3+bins*2] += 1
+        signature_set[s1+s2*bins+s3*bins*bins] += 1
         return signature_set
 
     def gen_feature(self, point_idx, patch_idx):
@@ -152,7 +150,7 @@ class PointCloudFeature:
         tmp_feature = 0
         tmp_normal = 0
 
-        signature_set = np.zeros(4*3,)
+        signature_set = np.zeros(4**3,)
         # print(signature_set.shape)
         # assert False
 
