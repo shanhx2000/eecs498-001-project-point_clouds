@@ -32,8 +32,6 @@ def GetTranform( Cp, Cq ):
 def Join_Feature_Set(source, target):
     source_list = source.p_f_list
     target_list = target.p_f_list
-    print(target_list)
-    assert(False)
     # print("source_list", np.array(source.p_f_list).shape)
     # print("target_list", target_list.shape)
     Cp = []
@@ -131,8 +129,8 @@ def main():
     tmp_PC1 = get_sparse_PC(PC1, int(N / 10))
     tmp_PC2 = get_sparse_PC(PC2, int(N / 10))
     print(tmp_PC1.shape)
-    print(time.time() - start)
-    assert(False)
+    print("After get sparse PC:", time.time() - start)
+    # assert(False)
     # if PC1.shape[0] < PC2.shape[0]:
     #     tmp_P = copy(PC1)
     #     PC1 = copy(PC2)
@@ -150,12 +148,10 @@ def main():
     # for i in range(N):
     #     P1[i] = PC1[chosen_index[i]][:]
     #     P2[i] = PC2[chosen_index[i]][:]
-    # P1 = np.expand_dims(PC1, axis = 2)[:2000]
-    # P2 = np.expand_dims(PC2, axis = 2)[:2000]
-    # P = utils.convert_pc_to_matrix(P1)
-    # Q = utils.convert_pc_to_matrix(P2)
-    P = utils.convert_pc_to_matrix(pc_source)
-    Q = utils.convert_pc_to_matrix(pc_target)
+    P1 = np.expand_dims(tmp_PC1, axis = 2)
+    P2 = np.expand_dims(tmp_PC2, axis = 2)
+    P = utils.convert_pc_to_matrix(P1)
+    Q = utils.convert_pc_to_matrix(P2)
     print ( P.shape )
     doneFlag = False
     bestCost = 99999999
@@ -200,7 +196,7 @@ def main():
     print ( P.shape )
     print("Total Time:", time.time() - start)
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
-    utils.view_pc([pc_fit, P2], None, ['b', 'r'], ['o', '^'])
+    utils.view_pc([pc_fit, P1, P2], None, ['b', 'r', 'g'], ['o', '^', 'o'])
 
     plt.axis([-2, 2, -2, 2])
 
