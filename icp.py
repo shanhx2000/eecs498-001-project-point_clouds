@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from os import error
-from numpy.core.defchararray import decode
+from numpy.core.defchararray import decode, title
 from numpy.lib.twodim_base import eye
 import hw4.utils as utils
 import numpy
@@ -80,7 +80,8 @@ def main():
     # assert False
 
     st_time = time.time()
-    
+    join_time_total = 0
+    feature_gen_time_total = 0
     
     doneFlag = False
     bestCost = 99999999
@@ -90,11 +91,17 @@ def main():
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
+        
+        tmp_st = time.time()
         feature_p = PCF(P, verbose=False)
         feature_q = PCF(Q)
         feature_p.build_features()
         feature_q.build_features()
+        feature_gen_time_total += time.time()-tmp_st
+        
+        tmp_st = time.time()
         Cp, Cq = Join_Feature_Set(feature_p, feature_q)
+        join_time_total += time.time() - tmp_st
 
         Cp = np.squeeze(np.array(Cp),axis=2).T
         Cq = np.squeeze(np.array(Cq),axis=2).T
@@ -124,7 +131,10 @@ def main():
 
     ed_time = time.time()
 
-    print("Time Cost=", ed_time-st_time)
+    print("Time Cost Total=", ed_time-st_time)
+    print("Time Cost for feature generation =", feature_gen_time_total)
+    print("Time Cost for join =", join_time_total)
+
 
     print ( P.shape )
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )

@@ -22,9 +22,16 @@ def set_limit(v, minv, maxv):
 
 class PointCloudFeature:
     
-    def __init__(self, source, distance_for_patch=2e-2, curvature_for_patch=0.9, verbose=False) -> None:
+    def __init__(self, 
+                source, 
+                distance_for_patch=1e-2, 
+                curvature_for_patch=0.9, 
+                verbose=False,
+                distance_for_patch_n_k=9e-3,
+                ) -> None:
         self.source = np.array(source)
         self.distance_for_patch = distance_for_patch
+        self.distance_for_patch_n_k = distance_for_patch_n_k
         self.curvature_for_patch = curvature_for_patch
         self.p_f_list = []
         self.curvature_list = []
@@ -44,7 +51,7 @@ class PointCloudFeature:
 
         for i in range(N):
             p = self.source[:,i].reshape( (3,1) )
-            patch = self.select_patch(p)
+            patch = self.select_patch(p, distance=self.distance_for_patch_n_k)
             self.gen_n_k(point=p, patch=patch)
 
         if self.verbose:
@@ -63,7 +70,7 @@ class PointCloudFeature:
             if p is None:
                 continue
             
-            patch_idx = self.select_patch_index(p)
+            patch_idx = self.select_patch_index(p, self.distance_for_patch)
             feature, normal, curvature = self.gen_feature(point_idx=i, patch_idx=patch_idx)
             
             if feature is not None:
@@ -79,16 +86,16 @@ class PointCloudFeature:
         # assert False
         return len(self.p_f_list)
 
-    def select_patch_index(self, point):
-        return norm(self.source - point, axis=0) < self.distance_for_patch
+    def select_patch_index(self, point, distance):
+        return norm(self.source - point, axis=0) < distance
 
-    def select_patch(self, point):
+    def select_patch(self, point, distance):
         # print(  "source=", self.source.shape, "\n",
         #         "point=", point.shape, "\n",
         #         "self.source - point=", (self.source - point).shape, "\n",
         #         "norm(self.source - point, axis=0)=", norm(self.source - point, axis=0).shape, "\n",
         #     )
-        return self.source[:, self.select_patch_index(point)]
+        return self.source[:, self.select_patch_index(point, distance=distance)]
 
     def compute_curvature(self, S):
         k = S[0] / (S[0]+S[1]+S[2])
@@ -157,47 +164,45 @@ class PointCloudFeature:
         # print("patch", patch_idx.shape)
 
 
-        ns = self.normal_list[point_idx]
-        ps = point
+        # ns = self.normal_list[point_idx]
+        # ps = point
 
         pt_idx_list = np.arange(self.N)[patch_idx]
         for pt_idx in pt_idx_list:
-            pt = self.source[:, pt_idx].reshape(3,)
-            nt = self.normal_list[pt_idx].reshape(3,)
+            for pt_idx2 in pt_idx_list:
+                if pt_idx == pt_idx2:
+                    continue
+                pt = self.source[:, pt_idx].reshape(3,)
+                nt = self.normal_list[pt_idx].reshape(3,)
+                ps = self.source[:, pt_idx2].reshape(3,)
+                ns = self.normal_list[pt_idx2].reshape(3,)
+                
+                d = norm(pt-ps)
+                if d < 1e-7:  # Itself
+                    continue
+                u = ns
+                v = np.cross(u, (pt-ps)/d)
+                w = np.cross(u, v)
 
-            # print("ps=", ps.shape, "\n",
-            #     "ns=", ns.shape, "\n",
-            #     "pt=", pt.shape, "\n",
-            #     "nt=", nt.shape, "\n",
-            # )
-            # assert False
-            
-            d = norm(pt-ps)
-            if d < 1e-7:  # Itself
-                continue
-            u = ns
-            v = np.cross(u, (pt-ps)/d)
-            w = np.cross(u, v)
+                alpha = np.dot(v, nt)
+                phi = np.dot(u, (pt-ps)/d)
+                theta = np.arctan2(np.dot(w, nt), np.dot(u, nt))
 
-            alpha = np.dot(v, nt)
-            phi = np.dot(u, (pt-ps)/d)
-            theta = np.arctan2(np.dot(w, nt), np.dot(u, nt))
+                # print(
+                #     "v=", v, "\n",
+                #     "ns=", ns, "\n",
+                #     "alpha=", alpha, "\n",
+                #     "phi=", phi, "\n",
+                #     "theta=", theta, "\n",
+                # )
 
-            # print(
-            #     "v=", v, "\n",
-            #     "ns=", ns, "\n",
-            #     "alpha=", alpha, "\n",
-            #     "phi=", phi, "\n",
-            #     "theta=", theta, "\n",
-            # )
-
-            signature_set = self.calc_signature(alpha, phi, theta, signature_set)
+                signature_set = self.calc_signature(alpha, phi, theta, signature_set)
         
         # print(len(pt_idx_list))
         # print(signature_set)
         # assert False
 
-        return signature_set, ns, curvature
+        return signature_set, self.normal_list[point_idx], curvature
 
 
     # Load feature tuple at index
