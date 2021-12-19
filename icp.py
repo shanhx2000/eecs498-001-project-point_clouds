@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from os import error
-from numpy.core.defchararray import decode
+from numpy.core.defchararray import decode, title
 from numpy.lib.twodim_base import eye
 import hw4.utils as utils
 import numpy
@@ -10,7 +10,9 @@ import numpy as np
 from numpy.linalg import svd, norm
 from PointCloudFeature import PointCloudFeature as PCF
 import gc
-import pcl
+from pcloader import load_pcl
+import time
+# import pcl
 
 ###YOUR IMPORTS HERE###
 def GetTranform( Cp, Cq ):
@@ -46,18 +48,41 @@ def Join_Feature_Set(source, target):
         Cq.append(tmp_p.reshape( (3,1) ))
     return Cp, Cq
 
+
 def main():
     #Import the cloud
-    # pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
-    pc_source = np.asarray(pcl.load('data/capture0001.pcd'))
-
-    ###YOUR CODE HERE###
-    # pc_target = utils.load_pc('hw4/cloud_icp_target3.csv') # Change this to load in a different target
-    pc_target = np.asarray(pcl.load('data/capture0002.pcd'))
-
+    pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
+    pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
     P = utils.convert_pc_to_matrix(pc_source)
     Q = utils.convert_pc_to_matrix(pc_target)
+    
+
+    # data_dir = "./data/tutorials/template_alignment"
+    # filename_source = "person.pcd"
+    # filename_target = "object_template_0.pcd"
+    # source_data = load_pcl(filename=(data_dir+filename_source))
+    # target_data = load_pcl(filename=(data_dir+filename_target))
+    # P = np.matrix(source_data.T)
+    # Q = np.matrix(target_data.T)
+
     # print ( P.shape )
+    # fig1 = plt.figure()
+    # pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+    # utils.view_pc([pc_fit, pc_target], fig1, ['b', 'r'], ['o', '^'])
+    # fig2 = plt.figure()
+    # pc_fit = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+    # utils.view_pc([pc_fit, pc_target], fig2, ['b', 'r'], ['o', '^'])
+
+    # plt.axis([-0.15, 0.15, -0.15, 0.15])
+    # plt.show()
+    
+    # print ( P.shape )
+    # assert False
+
+    st_time = time.time()
+    join_time_total = 0
+    feature_gen_time_total = 0
+    
     doneFlag = False
     bestCost = 99999999
     eps = 1e-3 # 1e-2
@@ -66,11 +91,17 @@ def main():
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
+        
+        tmp_st = time.time()
         feature_p = PCF(P, verbose=False)
         feature_q = PCF(Q)
         feature_p.build_features()
         feature_q.build_features()
+        feature_gen_time_total += time.time()-tmp_st
+        
+        tmp_st = time.time()
         Cp, Cq = Join_Feature_Set(feature_p, feature_q)
+        join_time_total += time.time() - tmp_st
 
         Cp = np.squeeze(np.array(Cp),axis=2).T
         Cq = np.squeeze(np.array(Cq),axis=2).T
@@ -86,7 +117,7 @@ def main():
 
         if ( newCost < bestCost ):
             bestCost = newCost
-            print ( itr , " : ", bestCost )
+        print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
         
@@ -97,6 +128,13 @@ def main():
         itr = itr + 1
         if ( itr % 20 == 0 ):
             print ( "Iteration" , itr )
+
+    ed_time = time.time()
+
+    print("Time Cost Total=", ed_time-st_time)
+    print("Time Cost for feature generation =", feature_gen_time_total)
+    print("Time Cost for join =", join_time_total)
+
 
     print ( P.shape )
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
