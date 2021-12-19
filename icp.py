@@ -12,6 +12,8 @@ from PointCloudFeature import PointCloudFeature as PCF
 import gc
 from pcloader import load_pcl
 import time
+import pcl
+
 ###YOUR IMPORTS HERE###
 def GetTranform( Cp, Cq ):
     p = np.mean(Cp, axis=1).reshape( (3,1) )
