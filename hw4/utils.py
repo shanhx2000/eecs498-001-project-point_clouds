@@ -89,11 +89,13 @@ def view_pc(pcs, fig=None, color='b', marker='o'):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    
+    ax.view_init(0,0)
+    ax.margins(0)
     # Update the figure
     plt.draw()
     plt.pause(0.05)
     plt.ioff() #turn off interactive plotting
+    
     
     
     # Return a handle to the figure so the user can make adjustments

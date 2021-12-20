@@ -70,12 +70,21 @@ def main():
     # N = 500 #200000
     # PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
     # PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
-    with open('data_pcd/ism_train_horse_source.npy','rb') as f:
+
+
+    # tunable params
+    dataset = 'cat'
+    ratio = 0.5
+    dist = 10
+    # tunable params end
+
+    with open('data_pcd/ism_train_{}_source.npy'.format(dataset),'rb') as f:
         PC1 = np.load(f)
-    with open('data_pcd/ism_train_horse_target.npy','rb') as f:
+    with open('data_pcd/ism_train_{}_target.npy'.format(dataset),'rb') as f:
         PC2 = np.load(f)
     P = PC1.T
     Q = PC2.T
+    all_Q = copy(Q)
 
     print(P.shape)
     print(Q.shape)
@@ -99,16 +108,16 @@ def main():
     P = np.array(P)
     Q = np.array(Q)
     all_P = copy(P)
+    ori_all_P = copy(P)
     tmp_st = time.time()
-    P, Q = Kmeans_select(P, Q, ratio=0.3)
+    P, Q = Kmeans_select(P, Q, ratio=ratio)
     filter_time.append(time.time()-tmp_st)
-    ori_P = copy(P)
     # P, Q = Kmeans_select(P, Q, ratio=0.001)
 
 
     print("Build Q=", Q.shape)
     tmp_st = time.time()
-    feature_q = PCF(Q)
+    feature_q = PCF(Q, distance_for_patch = dist)
     fq = feature_q.build_features()
     feature_gen_time.append(time.time()-tmp_st)
     
@@ -127,7 +136,7 @@ def main():
         print("Generate ", P_filterred.shape[-1], " Points for P")
 
         tmp_st = time.time()
-        feature_p = PCF(P_filterred, verbose=False)
+        feature_p = PCF(P_filterred, verbose=False, distance_for_patch = dist)
         fp = feature_p.build_features()
         feature_gen_time.append(time.time()-tmp_st)
         
@@ -170,6 +179,8 @@ def main():
             bestCost = newCost
             # bestP = copy(P)
             bestP = copy(all_P)
+            bestR = copy(R)
+            bestt = copy(t)
         print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
@@ -195,20 +206,26 @@ def main():
     print("Itr Total=", itr)
     print("Avg Selected Point=", np.mean(np.array(selected_points_num)))
     print("Best Cost is: ", bestCost)
+    theta = 0.1
+    R = np.array([[1,0,0],[0,np.cos(theta), -np.sin(theta)],[0,np.sin(theta),np.cos(theta)]])
+    t = np.array([[1, 2, -1]])
+    print("Best RLoss is: ", norm(R-bestR))
+    print("Best tLoss is: ", norm(t-bestt))
     
 
     print ( P.shape )
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(bestP,axis=2) )
-    pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+    pc_target = utils.convert_matrix_to_pc( np.expand_dims(all_Q,axis=2) )
     utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+    plt.savefig('result/cat_ratio_{}_dist_{}.png'.format(ratio, dist),bbox_inches='tight')
 
     fig1 = plt.figure()
-    plt.plot( range(len(error_list)) , error_list )
+    # plt.plot( range(len(error_list)) , error_list )
 
-    pc_source = utils.convert_matrix_to_pc( np.expand_dims(ori_P,axis=2) )
-    pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
-    utils.view_pc([pc_source, pc_target], None, ['b', 'r'], ['o', '^'])
-    plt.show()
+    # pc_source = utils.convert_matrix_to_pc( np.expand_dims(ori_all_P,axis=2) )
+    # pc_target = utils.convert_matrix_to_pc( np.expand_dims(all_Q,axis=2) )
+    # utils.view_pc([pc_source, pc_target], None, ['b', 'r'], ['o', '^'])
+    # plt.savefig('result/cat_ori.png',bbox_inches='tight')
 
 
 if __name__ == '__main__':
