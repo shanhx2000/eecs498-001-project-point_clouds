@@ -68,9 +68,11 @@ def get_sparse_PC(PC, target_N):
 
 def sparse_PC(PC1, PC2, N):
     """
-    @params PC1: the source PC
-    @params PC2: the target PC
+    @params PC1: the source PC with size [#, 3]
+    @params PC2: the target PC with size [#, 3]
     @params N: the number of points you want after filtering
+
+    return: P, Q with size [3, N]
     """
     tmp_PC1 = get_sparse_PC(PC1, N)
     # print(PC1.shape, tmp_PC1.shape)
@@ -80,4 +82,6 @@ def sparse_PC(PC1, PC2, N):
     # tmp_PC2 = tmp_PC2 + 1
     P1 = np.expand_dims(tmp_PC1, axis = 2)
     P2 = np.expand_dims(tmp_PC2, axis = 2)
-    return P1, P2
+    P = utils.convert_pc_to_matrix(P1)
+    Q = utils.convert_pc_to_matrix(P2)
+    return P, Q
