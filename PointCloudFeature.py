@@ -36,6 +36,11 @@ class PointCloudFeature:
         self.p_f_list = []
         self.curvature_list = []
         self.normal_list = []
+        N = source.shape[1]
+        for i in range(N):
+            self.curvature_list.append(None)
+            self.normal_list.append(None)
+
         self.patch_size = []
         self.N = source.shape[1]
         # self.output_points = []
@@ -49,20 +54,27 @@ class PointCloudFeature:
     
     def build_features(self):
         assert self.p_f_list == []
-        N = self.to_handle.shape[1]
+        M = self.to_handle.shape[1]
         if self.verbose:
             print("Start building up PCF")
 
-        for i in range(N):
+        for i in range(M):
             p = self.to_handle[:,i].reshape( (3,1) )
-            patch = self.select_patch(p, distance=self.distance_for_patch_n_k)
-            self.patch_size.append(patch.shape[1])
-            self.gen_n_k(point=p, patch=patch)
+            # patch = self.select_patch(p, distance=self.distance_for_patch_n_k)
+            patch_index = self.select_patch_index(point=p, distance=self.distance_for_patch)
+            # patch = self.source[:,patch_index]
+            
+            pt_idx_list = np.arange(self.N)[patch_index]
+            for id in pt_idx_list:
+                if self.normal_list[id] is None:
+                    point = self.source[:,id].reshape( (3,1) )
+                    patch = self.select_patch(point, distance=self.distance_for_patch_n_k)
+                    self.gen_n_k(point_id=id, patch=patch)
 
         if self.verbose:
             print("Avg Patch Size=", np.mean(np.array(self.patch_size)), "Max Patch Size=", np.max(np.array(self.patch_size)))
 
-        for i in range(N):
+        for i in range(M):
             p = self.to_handle[:,i].reshape( (3,1) )
             
             patch_idx = self.select_patch_index(p, self.distance_for_patch)
@@ -91,17 +103,15 @@ class PointCloudFeature:
         k = S[2] / (S[0]+S[1]+S[2])
         return k
 
-    def gen_n_k(self, point, patch):
+    def gen_n_k(self, point_id, patch):
         U, S, Vh = svd(patch@patch.T)
         if self.verbose:
             self.patch_size_list.append(patch.shape[1])
 
         normal = U[:,0]
-        self.normal_list.append(normal)
-
+        self.normal_list[point_id] = normal
         curvature = self.compute_curvature(S)
-        self.curvature_list.append(curvature)
-
+        self.curvature_list[point_id] = curvature
         pass        
     
     def calc_signature(self, alpha, phi, theta, signature_set):

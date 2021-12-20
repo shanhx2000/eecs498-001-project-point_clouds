@@ -4,7 +4,7 @@ def no_select(P1, P2):
     return P1, P2
 
 def Kmeans_select(P1, P2):
-    return no_select(P1, P2)
+    # return no_select(P1, P2)
 
     ratio = 0.2
     N = P1.shape[-1]
