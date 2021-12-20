@@ -10,8 +10,10 @@ import numpy as np
 from numpy.linalg import svd, norm
 from PointCloudFeature import PointCloudFeature as PCF
 import gc
-from pcloader import load_pcl
+from pcloader import load_pcl, get_sparse_PC
 import time
+from PointSelector import Kmeans_select
+# from pcloader
 # import pcl
 
 ###YOUR IMPORTS HERE###
@@ -51,29 +53,37 @@ def Join_Feature_Set(source, target):
 
 def main():
     #Import the cloud
-    pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
-    pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
-    P = utils.convert_pc_to_matrix(pc_source)
-    Q = utils.convert_pc_to_matrix(pc_target)
-    
+    # pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
+    # pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
+    # P = utils.convert_pc_to_matrix(pc_source)
+    # Q = utils.convert_pc_to_matrix(pc_target)
+    # print(P.shape)
+    # # assert False
 
-    # data_dir = "./data/tutorials/template_alignment"
-    # filename_source = "person.pcd"
-    # filename_target = "object_template_0.pcd"
-    # source_data = load_pcl(filename=(data_dir+filename_source))
-    # target_data = load_pcl(filename=(data_dir+filename_target))
-    # P = np.matrix(source_data.T)
-    # Q = np.matrix(target_data.T)
+    start = time.time()
+    N = 1000 #200000
+    PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
+    PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
+    P = PC1.T
+    Q = PC2.T
+    # print(P.shape)
+    # # assert False
+    # tmp_PC1 = get_sparse_PC(PC1, int(N / 10000))
+    # print(PC1.shape, tmp_PC1.shape)
+    # tmp_PC2 = get_sparse_PC(PC2, int(N / 10000))
+    # print(tmp_PC1.shape)
+    # print("After get sparse PC:", time.time() - start)
+    # P = np.expand_dims(tmp_PC1, axis = 2)
+    # Q = np.expand_dims(tmp_PC2, axis = 2)
+    # print(P.shape)
+    # assert False
 
-    # print ( P.shape )
+    print ( "P.shape=", P.shape )
     # fig1 = plt.figure()
     # pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
-    # utils.view_pc([pc_fit, pc_target], fig1, ['b', 'r'], ['o', '^'])
-    # fig2 = plt.figure()
-    # pc_fit = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
-    # utils.view_pc([pc_fit, pc_target], fig2, ['b', 'r'], ['o', '^'])
-
-    # plt.axis([-0.15, 0.15, -0.15, 0.15])
+    # pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+    # utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+    # # plt.axis([-0.15, 0.15, -0.15, 0.15])
     # plt.show()
     
     # print ( P.shape )
@@ -81,28 +91,52 @@ def main():
 
     st_time = time.time()
     join_time_total = 0
-    feature_gen_time_total = 0
+    # feature_gen_time_total = 0
     
     doneFlag = False
     bestCost = 99999999
     eps = 1e-3 # 1e-2
     itr = 0
     error_list = []
+
+    filter_time = []
+    feature_gen_time = []
+    selected_points_num = []
+
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
         
         tmp_st = time.time()
-        feature_p = PCF(P, verbose=False)
-        feature_q = PCF(Q)
-        feature_p.build_features()
+        P_filterred, Q_filterred = Kmeans_select(P, Q)
+        selected_points_num.append(P_filterred.shape[-1])
+        filter_time.append(time.time()-tmp_st)
+        print("Generate ", P_filterred.shape[-1], " Points for P")
+
+        if itr == 0 or itr % 5 == 0:
+            pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+            pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+            utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+
+            pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P_filterred,axis=2) )
+            pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q_filterred,axis=2) )
+            utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+            plt.show()
+
+        tmp_st = time.time()
+        if itr == 0:
+            feature_p = PCF(P_filterred, verbose=True)
+        else:
+            feature_p = PCF(P_filterred, verbose=False)
+        feature_q = PCF(Q_filterred)
+        p_f_list = feature_p.build_features()
         feature_q.build_features()
-        feature_gen_time_total += time.time()-tmp_st
+        feature_gen_time.append(time.time()-tmp_st)
+        # feature_gen_time_total += time.time()-tmp_st
         
         tmp_st = time.time()
         Cp, Cq = Join_Feature_Set(feature_p, feature_q)
         join_time_total += time.time() - tmp_st
-
         Cp = np.squeeze(np.array(Cp),axis=2).T
         Cq = np.squeeze(np.array(Cq),axis=2).T
         R,t = GetTranform( Cp, Cq )
@@ -121,7 +155,7 @@ def main():
         if ( newCost  < eps):
             doneFlag = True
         
-        if ( itr > 10 and error_list[-5] - newCost < eps):
+        if ( itr > 5 and error_list[-5] - newCost < eps):
             print ( error_list[-5] - newCost )
             doneFlag = True
 
@@ -132,14 +166,19 @@ def main():
     ed_time = time.time()
 
     print("Time Cost Total=", ed_time-st_time)
-    print("Time Cost for feature generation =", feature_gen_time_total)
+    print("Time Cost for filtering points =", np.mean(np.array(filter_time)))
+    print("Time Cost for feature generation =", np.mean(np.array(feature_gen_time)))
     print("Time Cost for join =", join_time_total)
-
+    print("Itr Total=", itr)
+    print("Avg Selected Point=", np.mean(np.array(selected_points_num)))
+    print("Best Cost is: ", bestCost)
+    
 
     print ( P.shape )
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+    pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
     utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
-    plt.axis([-0.15, 0.15, -0.15, 0.15])
+    # plt.axis([-0.15, 0.15, -0.15, 0.15])
 
     fig1 = plt.figure()
     plt.plot( range(len(error_list)) , error_list )
