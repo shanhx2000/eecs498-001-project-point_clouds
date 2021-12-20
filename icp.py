@@ -53,17 +53,17 @@ def Join_Feature_Set(source, target):
 
 def main():
     #Import the cloud
-    pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
-    pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
-    P = utils.convert_pc_to_matrix(pc_source)
-    Q = utils.convert_pc_to_matrix(pc_target)
+    # pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
+    # pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
+    # P = utils.convert_pc_to_matrix(pc_source)
+    # Q = utils.convert_pc_to_matrix(pc_target)
 
     start = time.time()
-    # N = 1000 #200000
-    # PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
-    # PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
-    # P = PC1.T
-    # Q = PC2.T
+    N = 2000 #200000
+    PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
+    PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
+    P = PC1.T
+    Q = PC2.T
 
     
     doneFlag = False
@@ -78,13 +78,13 @@ def main():
     transform_time_total = 0
     join_time_total = 0
     st_time = time.time()
-
+    P_filterred, Q_filterred = Kmeans_select(P, Q)
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
         
         tmp_st = time.time()
-        P_filterred, Q_filterred = Kmeans_select(P, Q)
+        
         selected_points_num.append(P_filterred.shape[-1])
         filter_time.append(time.time()-tmp_st)
         print("Generate ", P_filterred.shape[-1], " Points for P")
@@ -96,7 +96,7 @@ def main():
             feature_p = PCF(P_filterred, P, verbose=False)
         feature_q = PCF(Q_filterred, Q)
         p_f_list = feature_p.build_features()
-        feature_q.build_features()    
+        feature_q.build_features()
         feature_gen_time.append(time.time()-tmp_st)
         
         tmp_st = time.time()
@@ -107,13 +107,13 @@ def main():
         Cq = np.squeeze(np.array(Cq),axis=2).T
         print(Cp.shape)
         tmp_st = time.time()
-        R,t = GetTranform( Cp, Cq )
+        R,t = GetTranform(Cp, Cq)
         transform_time_total += time.time() - tmp_st
 
         
         gc.collect()
 
-        P = R@P+t  # Newly, Should be this one
+        P_filterred = R@P_filterred+t  # Newly, Should be this one
         newCost = np.sum( np.linalg.norm(R@Cp+t-Cq , axis=0)**2  )
         error_list.append(newCost)
 
