@@ -57,6 +57,8 @@ def main():
     pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
     P = utils.convert_pc_to_matrix(pc_source)
     Q = utils.convert_pc_to_matrix(pc_target)
+    # print(P.shape)
+    # # assert False
 
     start = time.time()
     # N = 1000 #200000
@@ -64,7 +66,32 @@ def main():
     # PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
     # P = PC1.T
     # Q = PC2.T
+    # print(P.shape)
+    # # assert False
+    # tmp_PC1 = get_sparse_PC(PC1, int(N / 10000))
+    # print(PC1.shape, tmp_PC1.shape)
+    # tmp_PC2 = get_sparse_PC(PC2, int(N / 10000))
+    # print(tmp_PC1.shape)
+    # print("After get sparse PC:", time.time() - start)
+    # P = np.expand_dims(tmp_PC1, axis = 2)
+    # Q = np.expand_dims(tmp_PC2, axis = 2)
+    # print(P.shape)
+    # assert False
 
+    print ( "P.shape=", P.shape )
+    # fig1 = plt.figure()
+    # pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+    # pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+    # utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+    # # plt.axis([-0.15, 0.15, -0.15, 0.15])
+    # plt.show()
+    
+    # print ( P.shape )
+    # assert False
+
+    st_time = time.time()
+    join_time_total = 0
+    # feature_gen_time_total = 0
     
     doneFlag = False
     bestCost = 99999999
@@ -76,9 +103,7 @@ def main():
     feature_gen_time = []
     selected_points_num = []
     transform_time_total = 0
-    join_time_total = 0
-    st_time = time.time()
-    
+
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
@@ -89,6 +114,16 @@ def main():
         filter_time.append(time.time()-tmp_st)
         print("Generate ", P_filterred.shape[-1], " Points for P")
 
+        # if itr == 0 or itr % 5 == 0:
+        #     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+        #     pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+        #     utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+
+        #     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P_filterred,axis=2) )
+        #     pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q_filterred,axis=2) )
+        #     utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+        #     plt.show()
+
         tmp_st = time.time()
         if itr == 0:
             feature_p = PCF(P_filterred, P, verbose=False)
@@ -98,6 +133,7 @@ def main():
         p_f_list = feature_p.build_features()
         feature_q.build_features()
         feature_gen_time.append(time.time()-tmp_st)
+        # feature_gen_time_total += time.time()-tmp_st
         
         tmp_st = time.time()
         Cp, Cq = Join_Feature_Set(feature_p, feature_q)
@@ -113,6 +149,7 @@ def main():
         del Cp, Cq, feature_p, feature_q
         gc.collect()
 
+        # P = R@Cp+t
         P = R@P+t  # Newly, Should be this one
         newCost = np.sum( np.linalg.norm(R@P+t-Q , axis=0)**2  )
         error_list.append(newCost)
@@ -147,6 +184,7 @@ def main():
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
     pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
     utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
+    # plt.axis([-0.15, 0.15, -0.15, 0.15])
 
     fig1 = plt.figure()
     plt.plot( range(len(error_list)) , error_list )

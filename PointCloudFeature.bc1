@@ -62,7 +62,22 @@ class PointCloudFeature:
         if self.verbose:
             print("Avg Patch Size=", np.mean(np.array(self.patch_size)), "Max Patch Size=", np.max(np.array(self.patch_size)))
 
+        # if self.verbose:
+        #     fig1 = plt.figure()
+        #     plt.hist(self.curvature_list, bins='auto')
+        #     plt.title("Curvature Distribution")
+        #     plt.show()
+
+        #     fig2 = plt.figure()
+        #     plt.hist(self.patch_size_list, bins='auto')
+        #     plt.title("Patch Size Distribution")
+        #     plt.show()
+
         for i in range(N):
+            # p = self.load(i)
+            # if p is None:
+            #     continue
+
             p = self.to_handle[:,i].reshape( (3,1) )
             
             patch_idx = self.select_patch_index(p, self.distance_for_patch)
@@ -78,6 +93,7 @@ class PointCloudFeature:
         if self.verbose:
             print("Obtain #feature=", len(self.p_f_list))
 
+        # assert False
         return self.p_f_list
 
     def select_patch_index(self, point, distance):
