@@ -14,6 +14,7 @@ from pcloader import load_pcl, get_sparse_PC
 import time
 from PointSelector import Kmeans_select
 from test_PFH import PFH
+from copy import copy
 # from pcloader
 # import pcl
 
@@ -70,19 +71,22 @@ def main():
     # N = 500 #200000
     # PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
     # PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
-    with open('data_pcd/ism_train_cat_source.npy','rb') as f:
+    with open('data_pcd/ism_train_horse_source.npy','rb') as f:
         PC1 = np.load(f)
-    with open('data_pcd/ism_train_cat_target.npy','rb') as f:
+    with open('data_pcd/ism_train_horse_target.npy','rb') as f:
         PC2 = np.load(f)
     P = PC1.T
     Q = PC2.T
-    
+
+    print(P.shape)
+    print(Q.shape)
 
     print("size=", P.shape)
 
     P = np.array(P)
     Q = np.array(Q)
-    P, Q = Kmeans_select(P, Q, ratio=0.3)
+    P, Q = Kmeans_select(P, Q, ratio=0.2)
+    ori_P = copy(P)
     # P, Q = Kmeans_select(P, Q, ratio=0.001)
 
     doneFlag = False
@@ -191,6 +195,10 @@ def main():
 
     fig1 = plt.figure()
     plt.plot( range(len(error_list)) , error_list )
+
+    pc_source = utils.convert_matrix_to_pc( np.expand_dims(ori_P,axis=2) )
+    pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
+    utils.view_pc([pc_source, pc_target], None, ['b', 'r'], ['o', '^'])
     plt.show()
 
 
