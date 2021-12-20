@@ -78,7 +78,7 @@ def main():
     transform_time_total = 0
     join_time_total = 0
     st_time = time.time()
-    
+
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
@@ -96,7 +96,7 @@ def main():
             feature_p = PCF(P_filterred, P, verbose=False)
         feature_q = PCF(Q_filterred, Q)
         p_f_list = feature_p.build_features()
-        feature_q.build_features()
+        feature_q.build_features()    
         feature_gen_time.append(time.time()-tmp_st)
         
         tmp_st = time.time()
@@ -110,11 +110,11 @@ def main():
         R,t = GetTranform( Cp, Cq )
         transform_time_total += time.time() - tmp_st
 
-        del Cp, Cq, feature_p, feature_q
+        
         gc.collect()
 
         P = R@P+t  # Newly, Should be this one
-        newCost = np.sum( np.linalg.norm(R@P+t-Q , axis=0)**2  )
+        newCost = np.sum( np.linalg.norm(R@Cp+t-Cq , axis=0)**2  )
         error_list.append(newCost)
 
         if ( newCost < bestCost ):
@@ -130,6 +130,8 @@ def main():
         itr = itr + 1
         if ( itr % 20 == 0 ):
             print ( "Iteration" , itr )
+
+        del Cp, feature_p, Cq, feature_q
 
     ed_time = time.time()
 
