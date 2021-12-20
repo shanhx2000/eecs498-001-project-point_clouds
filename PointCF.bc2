@@ -28,23 +28,14 @@ class PointCloudFeature:
     #             verbose=False,
     #             distance_for_patch_n_k=1.5*1e-2,
     #             ) -> None:
-    # def __init__(self, 
-    #             to_handle,
-    #             source, 
-    #             distance_for_patch=3e-2, 
-    #             curvature_for_patch=7e-7, 
-    #             verbose=False,
-    #             distance_for_patch_n_k=2e-2,
-    #             ) -> None:
     def __init__(self, 
                 to_handle,
                 source, 
-                distance_for_patch=1e0, 
+                distance_for_patch=3e-2, 
                 curvature_for_patch=7e-7, 
                 verbose=False,
-                distance_for_patch_n_k=1e0,
+                distance_for_patch_n_k=2e-2,
                 ) -> None:
-
         self.to_handle = np.array(to_handle)
         self.source = np.array(source)
         self.distance_for_patch = distance_for_patch
@@ -71,24 +62,45 @@ class PointCloudFeature:
     
     def build_features(self):
         assert self.p_f_list == []
-        N = self.source.shape[1]
+        M = self.to_handle.shape[1]
         if self.verbose:
             print("Start building up PCF")
 
-        for i in range(N):
-            p = self.source[:,i].reshape( (3,1) )
-            patch = self.select_patch(point=p, distance=self.distance_for_patch_n_k)
-            self.patch_size.append(len(patch))
-            self.gen_n_k(point_id=i, patch=patch)
+        for i in range(M):
+            p = self.to_handle[:,i].reshape( (3,1) )
+            # patch = self.select_patch(p, distance=self.distance_for_patch_n_k)
+            patch_index = self.select_patch_index(point=p, distance=self.distance_for_patch)
+            # patch = self.source[:,patch_index]
+            
+            pt_idx_list = np.arange(self.N)[patch_index]
+            self.patch_size.append(len(pt_idx_list))
+            for id in pt_idx_list:
+                if self.normal_list[id] is None:
+                    point = self.source[:,id].reshape( (3,1) )
+                    patch = self.select_patch(point, distance=self.distance_for_patch_n_k)
+                    self.gen_n_k(point_id=id, patch=patch)
 
-        for i in range(N):
-            p = self.source[:,i].reshape( (3,1) )
-            patch_idx = self.select_patch_index(point=p, distannce=self.distance_for_patch)
-            feature, normal, curvature = self.gen_feature(point_idx=i, patch_idx=patch_idx)
-            self.p_f_list.append(point_and_feature(p, feature))
 
+        for i in range(M):
+            p = self.to_handle[:,i].reshape( (3,1) )
+            
+            patch_idx = self.select_patch_index(p, self.distance_for_patch)
+            feature, _, _ = self.gen_feature(point_idx=i, patch_idx=patch_idx)
+            
+            if feature is not None:
+                self.p_f_list.append(point_and_feature(p, feature))
+            
+            if self.verbose:
+                if i%100 == 0:
+                    print("feature for ", i, " is: ", feature, "\n")
+
+        if self.verbose:
+            print("Obtain #feature=", len(self.p_f_list))
+
+        # if self.verbose:
         print("Avg Patch Size=", np.mean(np.array(self.patch_size)), "Max Patch Size=", np.max(np.array(self.patch_size)))
-        # return self.p_f_list
+
+        return self.p_f_list
 
     def select_patch_index(self, point, distance):
         return norm(self.source - point, axis=0) < distance
@@ -110,6 +122,7 @@ class PointCloudFeature:
         self.normal_list[point_id] = normal
         curvature = self.compute_curvature(S)
         self.curvature_list[point_id] = curvature
+        pass        
     
     def calc_signature(self, alpha, phi, theta, signature_set):
         alpha_offset = -0.07
@@ -134,9 +147,16 @@ class PointCloudFeature:
         point = self.source[:, point_idx]
         patch = self.source[:, patch_idx]
 
+        # curvature = self.curvature_list[point_idx]
+        # if curvature < self.curvature_for_patch:
+        #     return None, None, None
+
         signature_set = np.zeros(self.bins**3,)
+
         pt_idx_list = np.arange(self.N)[patch_idx]
         
+        # print(pt_idx_list)
+
         alphas = []
         phis = []
         thetas = []

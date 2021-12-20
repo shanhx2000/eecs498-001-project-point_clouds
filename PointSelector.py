@@ -6,7 +6,7 @@ def no_select(P1, P2):
 def Kmeans_select(P1, P2):
     # return no_select(P1, P2)
 
-    ratio = 0.2
+    ratio = 0.1
     N = P1.shape[-1]
     kmeans1 = KMeans(n_clusters=(int)(ratio*N), max_iter=300, random_state=0).fit(P1.T)
     P1_ret = kmeans1.cluster_centers_.T #P1[:,kmeans1.labels_]
