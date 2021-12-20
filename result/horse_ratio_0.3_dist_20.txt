@@ -1,0 +1,217 @@
+(3, 3400)
+(3, 3400)
+size= (3, 3400)
+Build Q= (3, 1020)
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+Start ICP!
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1799.706972085395
+0  :  76814.61377443706
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1300.597698222375
+1  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1353.9343387952104
+2  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1380.7423166108074
+3  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1242.013155341015
+4  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1265.4297236162313
+5  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1470.3910670728237
+6  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1458.1163282263967
+7  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1375.2299665049923
+8  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1445.332003896291
+9  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1559.7827768790285
+10  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1107.4522454356447
+11  :  27326.047360082197
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1302.7141017942497
+12  :  23016.364450407586
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1080.7865739075162
+13  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 970.3728145106935
+14  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1168.8073769161883
+15  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1037.0668049016624
+16  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1250.6944938026759
+17  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1361.1543139607447
+18  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1412.7709253534676
+19  :  11526.677851424709
+Iteration 20
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1518.514587018398
+20  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1265.0016481346113
+21  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1468.410782776107
+22  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1405.5147904279345
+23  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1515.8083781570706
+24  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1555.2440754207782
+25  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1160.325130189791
+26  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1007.3389996931501
+27  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1198.2268574356792
+28  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1305.9583609196807
+29  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1135.7131000391366
+30  :  11526.677851424709
+Generate  1020  Points for P
+(1020, 3)
+Finish compute u
+Avg Patch Size= 3.0 Max Patch Size= 3
+CHECK THIS 1207.207211040676
+31  :  11526.677851424709
+-19821.437042046295
+Time Cost Total= 47.9675407409668
+Time Cost for filtering points = 10.599127292633057
+Time Cost for feature generation = 29.83895492553711
+Time Cost for join = 6.228009462356567
+Time for transform= 0.007649660110473633
+Itr Total= 32
+Avg Selected Point= 1020.0
+Best Cost is:  11526.677851424709
+(3, 1020)
+pc= 3400  pt= [[-45.20654807]
+ [ 80.81738863]
+ [122.52735534]]
+pc= 3400  pt= [[-44.1791    ]
+ [ 77.72248821]
+ [122.401573  ]]
