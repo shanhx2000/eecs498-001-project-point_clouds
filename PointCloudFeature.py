@@ -39,10 +39,10 @@ class PointCloudFeature:
     def __init__(self, 
                 to_handle,
                 source, 
-                distance_for_patch=1e0, 
+                distance_for_patch=3e-1, 
                 curvature_for_patch=7e-7, 
                 verbose=False,
-                distance_for_patch_n_k=1e0,
+                distance_for_patch_n_k=3e-1,
                 ) -> None:
 
         self.to_handle = np.array(to_handle)
@@ -83,7 +83,7 @@ class PointCloudFeature:
 
         for i in range(N):
             p = self.source[:,i].reshape( (3,1) )
-            patch_idx = self.select_patch_index(point=p, distannce=self.distance_for_patch)
+            patch_idx = self.select_patch_index(point=p, distance=self.distance_for_patch)
             feature, normal, curvature = self.gen_feature(point_idx=i, patch_idx=patch_idx)
             self.p_f_list.append(point_and_feature(p, feature))
 

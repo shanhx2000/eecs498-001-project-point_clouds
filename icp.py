@@ -24,7 +24,7 @@ def GetTranform( Cp, Cq ):
     Y = Cq - q
     S = X @ Y.T
     u,sig,v = np.linalg.svd(S)
-    v = v.T
+    v = v.T ## DEBUG
     tmp = np.eye(3)
     tmp[2,2] = np.linalg.det(v@u.T)
     R = v@tmp@u.T
@@ -38,6 +38,10 @@ def Join_Feature_Set(source, target):
     # print("target_list", target_list.shape)
     Cp = []
     Cq = []
+    # for i in range(len(source_list)):
+    #     Cp.append(source_list[i].point.reshape( (3,1) ))
+    #     Cq.append(target_list[i].point.reshape( (3,1) ))
+
     for s in source_list:
         vmin = 1e5
         tmp_p = None
@@ -59,13 +63,16 @@ def main():
     # Q = utils.convert_pc_to_matrix(pc_target)
 
     start = time.time()
-    N = 500 #200000
+    N = 20000 #200000
     PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
     PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
     P = PC1.T
-    Q = PC2.T
+    # Q = PC2.T
+    Q = P+10
+    P, Q = Kmeans_select(P, Q, ratio=0.001)
 
-    
+    print("size=", P.shape)
+
     doneFlag = False
     bestCost = 99999999
     eps = 1e-3 # 1e-2
@@ -79,24 +86,26 @@ def main():
     join_time_total = 0
     st_time = time.time()
 
+    feature_q = PCF(Q, Q)
+    feature_q.build_features()
+    
+    print("Start ICP!")
+
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
         
         tmp_st = time.time()
-        P_filterred, Q_filterred = Kmeans_select(P, Q)
+        # P_filterred, Q_filterred = Kmeans_select(P, Q)
+        P_filterred, Q_filterred = P, Q
+
         selected_points_num.append(P_filterred.shape[-1])
         filter_time.append(time.time()-tmp_st)
         print("Generate ", P_filterred.shape[-1], " Points for P")
 
         tmp_st = time.time()
-        # feature_p = PCF(P_filterred, P, verbose=False)
-        # feature_q = PCF(Q_filterred, Q)
         feature_p = PCF(P_filterred, P_filterred, verbose=False)
-        feature_q = PCF(Q_filterred, Q_filterred)
-
         feature_p.build_features()
-        feature_q.build_features()
         feature_gen_time.append(time.time()-tmp_st)
         
         assert feature_p != []
@@ -104,15 +113,19 @@ def main():
         tmp_st = time.time()
         Cp, Cq = Join_Feature_Set(feature_p, feature_q)
         join_time_total += time.time() - tmp_st
+        
 
         Cp = np.squeeze(np.array(Cp),axis=2).T
         Cq = np.squeeze(np.array(Cq),axis=2).T
         print(Cp.shape)
+        print(np.stack((Cp,Cq),axis=0))
+        print("CHECK THIS",np.mean(norm(Cp-Cq,axis=1)))
         tmp_st = time.time()
         R,t = GetTranform( Cp, Cq )
         transform_time_total += time.time() - tmp_st
 
-        P = R@P+t  # Newly, Should be this one
+        # P = R@P+t  # Newly, Should be this one
+        P = R@Cp+t
         newCost = np.sum( np.linalg.norm(P-Q , axis=0)**2  )
         
         # gc.collect()
@@ -120,9 +133,6 @@ def main():
         # P = R@P+t  # Newly, Should be this one
         # newCost = np.sum( np.linalg.norm(R@Cp+t-Cq , axis=0)**2  )
         error_list.append(newCost)
-
-        del Cp, Cq, feature_p, feature_q
-        gc.collect()
 
         if ( newCost < bestCost ):
             bestCost = newCost
@@ -138,7 +148,8 @@ def main():
         if ( itr % 20 == 0 ):
             print ( "Iteration" , itr )
 
-        del Cp, feature_p, Cq, feature_q
+        del Cp, feature_p
+        gc.collect()
 
     ed_time = time.time()
 
