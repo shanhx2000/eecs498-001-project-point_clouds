@@ -78,7 +78,7 @@ def main():
     transform_time_total = 0
     join_time_total = 0
     st_time = time.time()
-    
+
     while ( not doneFlag and itr < 100 ):
         Cp = []
         Cq = []
@@ -114,6 +114,11 @@ def main():
 
         P = R@P+t  # Newly, Should be this one
         newCost = np.sum( np.linalg.norm(P-Q , axis=0)**2  )
+        
+        # gc.collect()
+
+        # P = R@P+t  # Newly, Should be this one
+        # newCost = np.sum( np.linalg.norm(R@Cp+t-Cq , axis=0)**2  )
         error_list.append(newCost)
 
         del Cp, Cq, feature_p, feature_q
@@ -132,6 +137,8 @@ def main():
         itr = itr + 1
         if ( itr % 20 == 0 ):
             print ( "Iteration" , itr )
+
+        del Cp, feature_p, Cq, feature_q
 
     ed_time = time.time()
 
