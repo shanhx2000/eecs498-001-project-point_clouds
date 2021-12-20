@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-from re import T
 import numpy as np
 from numpy.lib.utils import source
 from numpy.linalg import svd, norm
 import matplotlib.pyplot as plt
 from math import floor, pi
-
-from numpy.ma.core import set_fill_value
 
 class point_and_feature:
 
@@ -40,13 +37,15 @@ class PointCloudFeature:
     #             distance_for_patch_n_k=2e-2,
     #             ) -> None:
     def __init__(self, 
+                to_handle,
                 source, 
-                distance_for_patch=5e-1, 
+                distance_for_patch=3e-1, 
                 curvature_for_patch=7e-7, 
                 verbose=False,
-                distance_for_patch_n_k=5e-1,
+                distance_for_patch_n_k=3e-1,
                 ) -> None:
 
+        self.to_handle = np.array(to_handle)
         self.source = np.array(source)
         self.distance_for_patch = distance_for_patch
         self.distance_for_patch_n_k = distance_for_patch_n_k
@@ -54,7 +53,6 @@ class PointCloudFeature:
         self.p_f_list = []
         self.curvature_list = []
         self.normal_list = []
-        self.dist_mat = self.get_dist_mat(source)
         N = source.shape[1]
         for i in range(N):
             self.curvature_list.append(None)
@@ -71,30 +69,17 @@ class PointCloudFeature:
             self.patch_size_list = []
             print("PCF source shape=", self.source.shape)
     
-    def get_dist_mat(self, x):
-        x = x.T
-        print(x.shape)
-        s1 = np.sum(x**2, axis=1, keepdims=True)
-        s2 = np.sum(x**2, axis=1, keepdims=True)
-        dist = (s1 + s2.T - 2.0 * x@x.T)
-        dist[dist < 1e-7] = 0
-        return dist**0.5
-
     def build_features(self):
         assert self.p_f_list == []
         N = self.source.shape[1]
+        if self.verbose:
+            print("Start building up PCF")
+
         for i in range(N):
             p = self.source[:,i].reshape( (3,1) )
             patch = self.select_patch(point=p, distance=self.distance_for_patch_n_k)
-            patch_idx = np.squeeze(np.argwhere(self.dist_matt[i,:] < self.distance_for_patch))
-            
-            assert patch == self.source[:,patch_idx]
-
             self.patch_size.append(len(patch))
-            _, S, Vh = svd(patch@patch.T)
-            min_idx = np.argmin(S)
-            normal = Vh[min_idx,:]
-            self.normal_list[i] = normal
+            self.gen_n_k(point_id=i, patch=patch)
 
         for i in range(N):
             p = self.source[:,i].reshape( (3,1) )
@@ -106,6 +91,8 @@ class PointCloudFeature:
         # return self.p_f_list
 
     def select_patch_index(self, point, distance):
+        # print(norm(self.source - point, axis=0).shape)
+        # assert False
         return norm(self.source - point, axis=0) < distance
 
     def select_patch(self, point, distance):
@@ -117,12 +104,11 @@ class PointCloudFeature:
         return k
 
     def gen_n_k(self, point_id, patch):
-        _, S, Vh = svd(patch@patch.T)
+        U, S, Vh = svd(patch@patch.T)
         if self.verbose:
             self.patch_size_list.append(patch.shape[1])
 
-        min_idx = np.argmin(S)
-        normal = Vh[min_idx,:]
+        normal = U[:,0]
         self.normal_list[point_id] = normal
         curvature = self.compute_curvature(S)
         self.curvature_list[point_id] = curvature
