@@ -60,8 +60,13 @@ def main():
 
     start = time.time()
     N = 500 #200000
-    PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
-    PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
+    # PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
+    # PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
+    with open('data_pcd/ism_train_cat_source.npy','rb') as f:
+        PC1 = np.load(f)
+    with open('data_pcd/ism_train_cat_target.npy','rb') as f:
+        PC2 = np.load(f)
+        
     P = PC1.T
     Q = PC2.T
 
