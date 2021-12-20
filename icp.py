@@ -64,7 +64,6 @@ def main():
     # P = utils.convert_pc_to_matrix(pc_source)
     # Q = utils.convert_pc_to_matrix(pc_target)
 
-    start = time.time()
     # N = 20000 #200000
     # PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
     # PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
@@ -83,12 +82,6 @@ def main():
 
     print("size=", P.shape)
 
-    P = np.array(P)
-    Q = np.array(Q)
-    P, Q = Kmeans_select(P, Q, ratio=0.3)
-    ori_P = copy(P)
-    # P, Q = Kmeans_select(P, Q, ratio=0.001)
-
     doneFlag = False
     bestCost = 99999999
     eps = 1e-3 # 1e-2
@@ -100,11 +93,24 @@ def main():
     selected_points_num = []
     transform_time_total = 0
     join_time_total = 0
+
     st_time = time.time()
 
+    P = np.array(P)
+    Q = np.array(Q)
+    all_P = copy(P)
+    tmp_st = time.time()
+    P, Q = Kmeans_select(P, Q, ratio=0.3)
+    filter_time.append(time.time()-tmp_st)
+    ori_P = copy(P)
+    # P, Q = Kmeans_select(P, Q, ratio=0.001)
+
+
     print("Build Q=", Q.shape)
+    tmp_st = time.time()
     feature_q = PCF(Q)
     fq = feature_q.build_features()
+    feature_gen_time.append(time.time()-tmp_st)
     
     print("Start ICP!")
 
@@ -151,6 +157,7 @@ def main():
 
         # P = R@P+t  # Newly, Should be this one
         P = R@Cp+t
+        all_P = R@all_P+t
         newCost = np.sum( np.linalg.norm(P-Q , axis=0)**2  )
         
         # gc.collect()
@@ -161,7 +168,8 @@ def main():
 
         if ( newCost < bestCost ):
             bestCost = newCost
-            bestP = copy(P)
+            # bestP = copy(P)
+            bestP = copy(all_P)
         print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
@@ -180,8 +188,8 @@ def main():
     ed_time = time.time()
 
     print("Time Cost Total=", ed_time-st_time)
-    print("Time Cost for filtering points =", np.mean(np.array(filter_time)))
-    print("Time Cost for feature generation =", np.mean(np.array(feature_gen_time)))
+    print("Time Cost for filtering points =", np.sum(np.array(filter_time)))
+    print("Time Cost for feature generation =", np.sum(np.array(feature_gen_time)))
     print("Time Cost for join =", join_time_total)
     print("Time for transform=", transform_time_total)
     print("Itr Total=", itr)
