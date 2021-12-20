@@ -122,8 +122,8 @@ def main():
     #Import the cloud
     start = time.time()
     N = 2000
-    PC1 = np.loadtxt('data/capture0001.txt')[:N]
-    PC2 = np.loadtxt('data/capture0003.txt')[:N]
+    PC1 = np.loadtxt('data_pcd/capture0001.txt')[:N]
+    PC2 = np.loadtxt('data_pcd/capture0003.txt')[:N]
 
 
     tmp_PC1 = get_sparse_PC(PC1, int(N / 10))
@@ -185,7 +185,7 @@ def main():
         if ( newCost  < eps):
             doneFlag = True
         
-        if ( itr > 10 and error_list[-5] - newCost < eps):
+        if ( itr > 50 and error_list[-5] - newCost < eps):
             print ( error_list[-5] - newCost )
             doneFlag = True
 
