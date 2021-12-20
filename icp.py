@@ -58,10 +58,10 @@ def Join_Feature_Set(source, target):
 
 def main():
     #Import the cloud
-    pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
-    pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
-    P = utils.convert_pc_to_matrix(pc_source)
-    Q = utils.convert_pc_to_matrix(pc_target)
+    # pc_source = utils.load_pc('hw4/cloud_icp_source.csv')
+    # pc_target = utils.load_pc('hw4/cloud_icp_target0.csv') # Change this to load in a different target
+    # P = utils.convert_pc_to_matrix(pc_source)
+    # Q = utils.convert_pc_to_matrix(pc_target)
 
     start = time.time()
     # N = 20000 #200000
@@ -70,16 +70,20 @@ def main():
     # N = 500 #200000
     # PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
     # PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
-    # with open('data_pcd/ism_train_cat_source.npy','rb') as f:
-    #     PC1 = np.load(f)
-    # with open('data_pcd/ism_train_cat_target.npy','rb') as f:
-    #     PC2 = np.load(f)
-    # P = PC1.T
-    # Q = PC2.T
-    # Q = P+10
-    # P, Q = Kmeans_select(P, Q, ratio=0.001)
+    with open('data_pcd/ism_train_cat_source.npy','rb') as f:
+        PC1 = np.load(f)
+    with open('data_pcd/ism_train_cat_target.npy','rb') as f:
+        PC2 = np.load(f)
+    P = PC1.T
+    Q = PC2.T
+    
 
     print("size=", P.shape)
+
+    P = np.array(P)
+    Q = np.array(Q)
+    P, Q = Kmeans_select(P, Q, ratio=0.3)
+    # P, Q = Kmeans_select(P, Q, ratio=0.001)
 
     doneFlag = False
     bestCost = 99999999
@@ -94,8 +98,9 @@ def main():
     join_time_total = 0
     st_time = time.time()
 
+    print("Build Q=", Q.shape)
     feature_q = PCF(Q)
-    feature_q.build_features()
+    fq = feature_q.build_features()
     
     print("Start ICP!")
 
@@ -113,20 +118,28 @@ def main():
 
         tmp_st = time.time()
         feature_p = PCF(P_filterred, verbose=False)
-        feature_p.build_features()
+        fp = feature_p.build_features()
         feature_gen_time.append(time.time()-tmp_st)
         
         assert feature_p != []
 
         tmp_st = time.time()
-        Cp, Cq = Join_Feature_Set(feature_p, feature_q)
+        # Cp, Cq = Join_Feature_Set(feature_p, feature_q)
+        for i in range(P.shape[1]):
+            pp = np.array(P[:,i]).reshape( (3,1) )
+            p = fp[i,:]
+            q_idx = np.argmin( np.linalg.norm(fq-p,axis=1) )
+            q = np.array(Q[:,q_idx]).reshape( (3,1) )
+            Cp.append( pp )
+            Cq.append( q )
+
         join_time_total += time.time() - tmp_st
         
 
         Cp = np.squeeze(np.array(Cp),axis=2).T
         Cq = np.squeeze(np.array(Cq),axis=2).T
-        print(Cp.shape)
-        print(np.stack((Cp,Cq),axis=0))
+        # print(Cp.shape)
+        # print(np.stack((Cp,Cq),axis=0))
         print("CHECK THIS",np.mean(norm(Cp-Cq,axis=1)))
         tmp_st = time.time()
         R,t = GetTranform( Cp, Cq )

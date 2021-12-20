@@ -93,10 +93,11 @@ def main():
     transform_time_total = 0
     join_time_total = 0
     st_time = time.time()
+    best_P = None
 
     # feature_q = PCF(Q)
     # feature_q.build_features()
-    r = 5e-2
+    r = 3e-2
     fq, _ = PFH(Q.T, r=r)
     print("Start ICP!")
 
@@ -110,7 +111,10 @@ def main():
         for i in range(P.shape[1]):
             pp = np.array(P[:,i]).reshape( (3,1) )
             p = fp[i,:]
-            q_idx = np.argmin( np.linalg.norm(fq-p,axis=0) )
+            if ( np.linalg.norm(fq-p,axis=1).shape != (495,) ):
+                print(np.linalg.norm(fq-p,axis=1).shape)
+                assert np.linalg.norm(fq-p,axis=1).shape == (495,)
+            q_idx = np.argmin( np.linalg.norm(fq-p,axis=1) )
             q = np.array(Q[:,q_idx]).reshape( (3,1) )
             Cp.append( pp )
             Cq.append( q )
@@ -136,6 +140,7 @@ def main():
 
         if ( newCost < bestCost ):
             bestCost = newCost
+            best_P = P
         print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
@@ -162,7 +167,7 @@ def main():
     print("Avg Selected Point=", np.mean(np.array(selected_points_num)))
     print("Best Cost is: ", bestCost)
     
-
+    P = best_P
     print ( P.shape )
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
     pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
