@@ -98,7 +98,9 @@ class PointCloudFeature:
         return self.source[:, self.select_patch_index(point, distance=distance)]
 
     def compute_curvature(self, S):
-        k = S[0] / (S[0]+S[1]+S[2])
+        # print(S)
+        k = S[-1] / (S[-1]+S[-2]+S[-3])
+        print("k = ", k)
         return k
 
     def gen_n_k(self, point, patch):

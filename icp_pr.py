@@ -49,7 +49,7 @@ def Join_Feature_Set(source, target):
         assert tmp_p is not None
         Cp.append(s.point.reshape( (3,1) ))
         Cq.append(tmp_p.reshape( (3,1) ))
-    print("JOIN_FEATURE_SET =", time.time() - start)
+    # print("JOIN_FEATURE_SET =", time.time() - start)
     return Cp, Cq
 
 def get_boundary(PC):
@@ -73,6 +73,7 @@ def get_sparse_PC(PC, target_N):
     # point_dict records which cube one point belongs to
     point_dict = {}
     for i in range(PC.shape[0]):
+        # Count the number of points in each block
         x = (int)((PC[i][0]-min_x) / diff_x)
         y = (int)((PC[i][1]-min_y) / diff_y)
         z = (int)((PC[i][2]-min_z) / diff_z)
@@ -121,35 +122,22 @@ def get_sparse_PC(PC, target_N):
 def main():
     #Import the cloud
     start = time.time()
-    N = 2000
-    PC1 = np.loadtxt('data_pcd/capture0001.txt')[:N]
-    PC2 = np.loadtxt('data_pcd/capture0003.txt')[:N]
+    N = 200000
+    PC1 = np.loadtxt('data_pcd/capture0003.txt')[:N]
+    PC2 = np.loadtxt('data_pcd/capture0001.txt')[:N]
 
 
-    tmp_PC1 = get_sparse_PC(PC1, int(N / 10))
-    tmp_PC2 = get_sparse_PC(PC2, int(N / 10))
+    tmp_PC1 = get_sparse_PC(PC1, int(N / 10000))
+    print(PC1.shape, tmp_PC1.shape)
+    
+    tmp_PC2 = get_sparse_PC(PC2, int(N / 10000))
     print(tmp_PC1.shape)
     print("After get sparse PC:", time.time() - start)
-    # assert(False)
-    # if PC1.shape[0] < PC2.shape[0]:
-    #     tmp_P = copy(PC1)
-    #     PC1 = copy(PC2)
-    #     PC2 = copy(tmp_P)
-    # deleted_index = np.random.choice(P2.shape[0], P1.shape[0]-P2.shape[0])
-    # number of sample of points
-    # N = 200000
 
-    # for i in deleted_index:
-    #     P1 = np.delete(P1, i, 0)
-    
-    # chosen_index = np.random.choice(PC2.shape[0], N)
-    # P1 = np.zeros((N,3))
-    # P2 = np.zeros((N,3))
-    # for i in range(N):
-    #     P1[i] = PC1[chosen_index[i]][:]
-    #     P2[i] = PC2[chosen_index[i]][:]
+    # tmp_PC2 = tmp_PC2 + 1
     P1 = np.expand_dims(tmp_PC1, axis = 2)
     P2 = np.expand_dims(tmp_PC2, axis = 2)
+    
     P = utils.convert_pc_to_matrix(P1)
     Q = utils.convert_pc_to_matrix(P2)
     print ( P.shape )
@@ -158,10 +146,10 @@ def main():
     eps = 1e-3 # 1e-2
     itr = 0
     error_list = []
-    while ( not doneFlag and itr < 100 ):
+    while ( not doneFlag and itr < 500 ):
         Cp = []
         Cq = []
-        feature_p = PCF(P, verbose=False)
+        feature_p = PCF(P, verbose=True)
         feature_q = PCF(Q)
         feature_p.build_features()
         feature_q.build_features()
@@ -182,10 +170,10 @@ def main():
         if ( newCost < bestCost ):
             bestCost = newCost
             print ( itr , " : ", bestCost )
-        if ( newCost  < eps):
+        if ( abs(newCost)  < eps):
             doneFlag = True
-        
-        if ( itr > 50 and error_list[-5] - newCost < eps):
+
+        if ( itr > 10 and abs(error_list[-5] - newCost) < eps):
             print ( error_list[-5] - newCost )
             doneFlag = True
 
@@ -196,6 +184,7 @@ def main():
     print ( P.shape )
     print("Total Time:", time.time() - start)
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+    # print(pc_fit.shape, tmp_PC1.shape, tmp_PC2.shape)
     utils.view_pc([pc_fit, P1, P2], None, ['b', 'r', 'g'], ['o', '^', 'o'])
 
     plt.axis([-2, 2, -2, 2])
