@@ -91,7 +91,7 @@ class PointCloudFeature:
             p = self.source[:,i].reshape( (3,1) )
             patch = self.select_patch(point=p, distance=self.distance_for_patch)
             patch_idx = np.squeeze(np.argwhere(self.dist_mat[i,:] < self.distance_for_patch))
-            assert np.all(patch == self.source[:,patch_idx])
+            # assert np.all(patch == self.source[:,patch_idx])
 
             self.patch_size.append(len(patch))
             _, S, Vh = svd(patch@patch.T)

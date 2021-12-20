@@ -85,7 +85,7 @@ def main():
 
     P = np.array(P)
     Q = np.array(Q)
-    P, Q = Kmeans_select(P, Q, ratio=0.2)
+    P, Q = Kmeans_select(P, Q, ratio=0.3)
     ori_P = copy(P)
     # P, Q = Kmeans_select(P, Q, ratio=0.001)
 
@@ -161,11 +161,12 @@ def main():
 
         if ( newCost < bestCost ):
             bestCost = newCost
+            bestP = copy(P)
         print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
         
-        if ( itr > 5 and error_list[-5] - newCost < eps):
+        if ( itr > 30 and error_list[-5] - newCost < eps):
             print ( error_list[-5] - newCost )
             doneFlag = True
 
@@ -189,7 +190,7 @@ def main():
     
 
     print ( P.shape )
-    pc_fit = utils.convert_matrix_to_pc( np.expand_dims(P,axis=2) )
+    pc_fit = utils.convert_matrix_to_pc( np.expand_dims(bestP,axis=2) )
     pc_target = utils.convert_matrix_to_pc( np.expand_dims(Q,axis=2) )
     utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
 
