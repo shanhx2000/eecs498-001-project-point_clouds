@@ -29,6 +29,7 @@ class PointCloudFeature:
                 curvature_for_patch=7e-7, 
                 verbose=False,
                 distance_for_patch_n_k=3e-2,
+                bins=5,
                 ) -> None:
 
         self.source = np.array(source)
@@ -47,7 +48,30 @@ class PointCloudFeature:
 
         self.patch_size = []
         self.N = source.shape[1]
-        self.bins = 5
+
+        self.bins = bins
+        self.bins_set = None
+
+        if self.bins == 5:
+            self.bins_set =[
+                [-1.0,-0.05, -1e-3, 1e-3, 0.05,1.0],
+                [0.0, 0.05, 0.15, 0.3, 0.6, 1.0],
+                [-pi, -pi/10., -pi/20., pi/20., pi/10., pi]
+            ]
+        elif self.bins == 4:
+            self.bins_set =[
+                [-1.0,-0.05, 0, 0.05,1.0],
+                [0.0, 0.05, 0.15, 0.4, 1.0],
+                [-pi, -pi/10., 0., pi/10., pi]
+            ]
+        elif self.bins == 6:
+            self.bins_set =[
+                [-1.0,-0.05, -1e-3, 0, 1e-3, 0.05,1.0],
+                [0.0, 0.03, 0.07, 0.15, 0.3, 0.6, 1.0],
+                [-pi, -pi/10., -pi/20., 0, pi/20., pi/10., pi]
+            ]
+        else:
+            self.bins_set = self.bins  # Auto generate
 
         self.verbose = verbose
         if verbose:
@@ -184,14 +208,10 @@ class PointCloudFeature:
         # phis = np.array(phis)
         # thetas = np.array(thetas)
 
-        assert self.bins == 5
+        # assert self.bins == 5
         signature_set, _ = np.histogramdd(
             np.stack([alphas, phis, thetas], axis=1), 
-            bins=[
-                [-1.0,-0.05, -1e-3, 1e-3, 0.05,1.0],
-                [0.0, 0.05, 0.15, 0.3, 0.6, 1.0],
-                [-pi, -pi/10., -pi/20., pi/20., pi/10., pi]
-            ]
+            bins=self.bins_set
             )
         signature_set = signature_set.flatten()
         return signature_set, None, None

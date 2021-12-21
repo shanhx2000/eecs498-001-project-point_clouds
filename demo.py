@@ -52,6 +52,13 @@ def main():
         dist = 10
     # tunable params end
 
+    bins = 5
+    bins_input = eval(input('Please select bins from 4, 5, 6:\n'))
+    if (bins_input < 4 or bins_input > 6):
+        print("Incorrect Input, Run with default bins (5).")
+    else:
+        bins = (int)(bins_input)
+
     print("Start Loading Data")
 
     # Import Data
@@ -89,7 +96,7 @@ def main():
 
     print("Build Q=", Q.shape)
     tmp_st = time.time()
-    feature_q = PCF(Q, distance_for_patch = dist)
+    feature_q = PCF(Q, distance_for_patch = dist, bins=bins)
     fq = feature_q.build_features()
     feature_gen_time.append(time.time()-tmp_st)
     
@@ -107,7 +114,7 @@ def main():
         # print("Generate ", P_filterred.shape[-1], " Points for P")
 
         tmp_st = time.time()
-        feature_p = PCF(P_filterred, verbose=False, distance_for_patch = dist)
+        feature_p = PCF(P_filterred, verbose=False, distance_for_patch = dist, bins=bins)
         fp = feature_p.build_features()
         feature_gen_time.append(time.time()-tmp_st)
         
