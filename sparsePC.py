@@ -1,4 +1,6 @@
 import numpy as np
+import random
+import hw4.utils as utils
 
 def get_boundary(PC):
     """
@@ -34,14 +36,20 @@ def get_sparse_PC(PC, target_N):
             point_dict[str(x)+','+str(y)+','+str(z)].append(i)
         else:
             point_dict[str(x)+','+str(y)+','+str(z)] = [i]
+
+        # print(str(x)+','+str(y)+','+str(z), point_dict[str(x)+','+str(y)+','+str(z)])
     count = np.ceil(count / PC.shape[0] * target_N)
     while (np.sum(count) != target_N):
+        # print(np.sum(count), target_N)
         if np.sum(count) > target_N:
             # Pick one non-zero entry to reduce 1 point
             while True:
                 rand_index = np.random.rand(3,1) * ratio
-                if count[(int)(rand_index[0])][(int)(rand_index[1])][(int)(rand_index[2])] > 0:
-                    count[(int)(rand_index[0])][(int)(rand_index[1])][(int)(rand_index[2])] -= 1
+                x = (int)(rand_index[0])
+                y = (int)(rand_index[1])
+                z = (int)(rand_index[2])
+                if count[x][y][z] > 0:
+                    count[x][y][z] -= 1
                     break
         else:
             # Pick one still available entry to add 1 point
@@ -60,24 +68,29 @@ def get_sparse_PC(PC, target_N):
             for k in range(ratio):
                 if count[i][j][k] == 0:
                     continue
+                # print(point_dict[str(i)+','+str(j)+','+str(k)])
+                # print(count[i][j][k])
                 tmp_point_index_list = random.sample(point_dict[str(i)+','+str(j)+','+str(k)], int(count[i][j][k]))
                 for point_index in tmp_point_index_list:
                     target_PC[index] = PC[point_index]
                     index += 1
     return target_PC
 
-def sparse_PC(PC1, PC2, N):
+def sparse_PC(PC1, PC2, ratio):
     """
     @params PC1: the source PC with size [#, 3]
     @params PC2: the target PC with size [#, 3]
-    @params N: the number of points you want after filtering
+    @params ratio: the ratio of points you want after filtering
 
     return: P, Q with size [3, N]
     """
-    tmp_PC1 = get_sparse_PC(PC1, N)
+    PC1 = PC1.T
+    PC2 = PC2.T
+    N = PC1.shape[0] * ratio
+    tmp_PC1 = get_sparse_PC(PC1, int(N))
     # print(PC1.shape, tmp_PC1.shape)
     
-    tmp_PC2 = get_sparse_PC(PC2, N)
+    tmp_PC2 = get_sparse_PC(PC2, int(N))
     # print(tmp_PC1.shape)
     # tmp_PC2 = tmp_PC2 + 1
     P1 = np.expand_dims(tmp_PC1, axis = 2)
