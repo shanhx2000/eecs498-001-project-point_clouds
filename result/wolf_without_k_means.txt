@@ -1,6 +1,7 @@
 (3, 3400)
 (3, 3400)
 size= (3, 3400)
+(3, 3400)
 Build Q= (3, 3400)
 (3400, 3)
 Finish compute u
@@ -212,11 +213,11 @@ Avg Patch Size= 3.0 Max Patch Size= 3
 CHECK THIS 1832.884058538991
 33  :  10636306.920578366
 -6007895.932742
-Time Cost Total= 206.04999327659607
-Time Cost for filtering points = 0.00027298927307128906
-Time Cost for feature generation = 56.903449058532715
-Time Cost for join = 147.5269365310669
-Time for transform= 0.015377998352050781
+Time Cost Total= 207.67730331420898
+Time Cost for filtering points = 0.0002758502960205078
+Time Cost for feature generation = 56.88514852523804
+Time Cost for join = 149.16918754577637
+Time for transform= 0.014973878860473633
 Itr Total= 34
 Avg Selected Point= 3400.0
 Best Cost is:  10636306.920578366
