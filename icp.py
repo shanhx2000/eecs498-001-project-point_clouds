@@ -15,6 +15,8 @@ import time
 from PointSelector import Kmeans_select
 from test_PFH import PFH
 from copy import copy
+from sparsePC import sparse_PC
+from randomPC import random_PC
 # from pcloader
 # import pcl
 
@@ -74,7 +76,7 @@ def main():
 
     # tunable params
     dataset = 'cat'
-    ratio = 0.5
+    ratio = 0.1
     dist = 10
     # tunable params end
 
@@ -111,6 +113,10 @@ def main():
     ori_all_P = copy(P)
     tmp_st = time.time()
     P, Q = Kmeans_select(P, Q, ratio=ratio)
+    # P, Q = sparse_PC(P, Q, ratio=0.1)
+    # P, Q = random_PC(P, Q, ratio=0.1)
+    print(P.shape)
+    
     filter_time.append(time.time()-tmp_st)
     # P, Q = Kmeans_select(P, Q, ratio=0.001)
 
@@ -179,8 +185,6 @@ def main():
             bestCost = newCost
             # bestP = copy(P)
             bestP = copy(all_P)
-            bestR = copy(R)
-            bestt = copy(t)
         print ( itr , " : ", bestCost )
         if ( newCost  < eps):
             doneFlag = True
@@ -206,26 +210,22 @@ def main():
     print("Itr Total=", itr)
     print("Avg Selected Point=", np.mean(np.array(selected_points_num)))
     print("Best Cost is: ", bestCost)
-    theta = 0.1
-    R = np.array([[1,0,0],[0,np.cos(theta), -np.sin(theta)],[0,np.sin(theta),np.cos(theta)]])
-    t = np.array([[1, 2, -1]])
-    print("Best RLoss is: ", norm(R-bestR))
-    print("Best tLoss is: ", norm(t-bestt))
-    
 
     print ( P.shape )
     pc_fit = utils.convert_matrix_to_pc( np.expand_dims(bestP,axis=2) )
     pc_target = utils.convert_matrix_to_pc( np.expand_dims(all_Q,axis=2) )
     utils.view_pc([pc_fit, pc_target], None, ['b', 'r'], ['o', '^'])
-    plt.savefig('result/cat_ratio_{}_dist_{}.png'.format(ratio, dist),bbox_inches='tight')
+    # plt.savefig('result/{}_ratio_{}_dist_{}.png'.format(dataset, ratio, dist),bbox_inches='tight')
+    # plt.savefig('result/{}_without_k_means.png'.format(dataset),bbox_inches='tight')
 
     fig1 = plt.figure()
+    plt.show()
     # plt.plot( range(len(error_list)) , error_list )
 
     # pc_source = utils.convert_matrix_to_pc( np.expand_dims(ori_all_P,axis=2) )
     # pc_target = utils.convert_matrix_to_pc( np.expand_dims(all_Q,axis=2) )
     # utils.view_pc([pc_source, pc_target], None, ['b', 'r'], ['o', '^'])
-    # plt.savefig('result/cat_ori.png',bbox_inches='tight')
+    # plt.savefig('result/{}_ori.png'.format(dataset),bbox_inches='tight')
 
 
 if __name__ == '__main__':
